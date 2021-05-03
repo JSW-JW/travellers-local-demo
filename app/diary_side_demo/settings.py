@@ -26,7 +26,7 @@ SECRET_KEY = '=7tksv+ja#6p+4k082!1hwl3lerv@o(*5@r&k4#b%qvvftt$yc'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -129,7 +129,7 @@ AUTH_USER_MODEL = 'user.UserProfile'
 
 THUMBNAIL_ALIASES = {
     '': {
-        'avatar': {'size': (40, 40)},
+        'thumb': {'size': (40, 40)},
         'image': {'size': (128, 128)},
     },
 }
