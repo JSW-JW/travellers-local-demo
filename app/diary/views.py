@@ -7,41 +7,15 @@ from rest_framework.authentication import TokenAuthentication
 
 from diary import serializers
 from diary.models import Diary
-from diary.helpers import modify_input_for_multiple_files
+from rest_framework.generics import get_object_or_404
 
 
-# @api_view(['GET', 'POST'])
-# def diary_list(request, filename):
-#     parser_classes = [FileUploadParser]
-#
-#     if request.method == 'GET':
-#         diaries = Diary.objects.all()
-#
-#         title = request.query_params.get('title', None)
-#         if title is not None:
-#             diaries = diaries.filter(title__icontains=title)
-#
-#         diary_serializer = serializers.DiarySerializer(diaries, many=True)
-#         return Response(diary_serializer.data, status=status.HTTP_200_OK)
-#
-#     elif request.method == 'POST':
-#
-#         if request.user.is_authenticated:
-#             file_obj = request.data['file']
-#
-#             diary_serializer = serializers.DiarySerializer(data=request.data)
-#             if diary_serializer.is_valid():
-#                 diary_serializer.save()
-#                 return Response(diary_serializer.data, status=status.HTTP_201_CREATED)
-#             return Response(diary_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#         else: # if is_anonymous
-#             return Response({'message': 'Unauthenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+class DiaryCreateListAPIView(APIView):
 
-class DiaryView(APIView):
     parser_classes = [MultiPartParser,]
     serializer_class = serializers.DiarySerializer
     authentication_classes = (TokenAuthentication,)
-    def get(self, request, format=None):
+    def get(self, request):
         """Returns a list of APIView features"""
         diaries = Diary.objects.all()
 
@@ -49,42 +23,48 @@ class DiaryView(APIView):
         if title is not None:
             diaries = diaries.filter(title__icontains=title)
 
-        diary_serializer = serializers.DiarySerializer(diaries, many=True, context={'request': request})
-        return Response(diary_serializer.data, status=status.HTTP_200_OK)
+        serializer = serializers.DiarySerializer(diaries, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        diary_serializer = serializers.DiarySerializer(data=request.data, context={'request': request})
-        images = dict((request.data).lists())['image_set']
-        print('image_set', images)
+        serializer = serializers.DiarySerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            diary = serializer.save(user=request.user)
+            images = dict((request.data).lists())['image_set']
+            if images != None:
+                pass
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        """Image creation process and making connections"""
+        # images = dict((request.data).lists())['image_set']
+        # print('image_set', images)
         # arr = []
         # for img_name in images:
         #     modified_data = modify_input_for_multiple_files(img_name)
-        if diary_serializer.is_valid():
-            diary = diary_serializer.save(user=request.user)
-            diary_serializer = serializers.DiarySerializer(diary)
 
-            return Response(diary_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(diary_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def diary_detail(request, pk):
-    try:
-        diary = Diary.objects.get(pk=pk)
-    except Diary.DoesNotExist:
-        return Response({'message': 'The diary does not exist'}, status=status.HTTP_404_NOT_FOUND)
+class DiaryDetailAPIView(APIView):
 
-    diary_serializer = serializers.DiarySerializer(diary, context={'request': request})
-    if request.method == 'GET':
-        return Response(diary_serializer.data)
+    def get_object(self, pk):
+        diary = get_object_or_404(Diary, pk=pk)
+        return diary
 
-    elif request.method == 'PUT':
-        if diary_serializer.is_valid():
-            diary_serializer.save()
-            return Response(diary_serializer.data, status=status.HTTP_200_OK)
-        return Response(diary_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, pk):
+        diary = self.get_object(pk)
+        serializer = serializers.DiarySerializer(diary, context={'request': request})
+        return Response(serializer.data)
 
-    elif request.method == 'DELETE':
+    def put(self, request, pk):
+        diary = self.get_object(pk)
+        serializer = serializers.DiarySerializer(diary, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        diary = self.get_object(pk=pk)
         diary.delete()
-        return Response({'message': 'Diary was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Diary was deleted successfully'}, status=status.HTTP_204_NO_CONTENT)

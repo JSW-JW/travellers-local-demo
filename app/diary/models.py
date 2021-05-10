@@ -1,5 +1,16 @@
+import uuid
+import os
 from django.db import models
 from user.models import UserProfile
+
+
+def diary_image_file_path(instance, filename):
+    """Generate file path for new diary image"""
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+
+    return os.path.join('uploads/diary', filename)
+
 
 class Diary(models.Model):
     """
@@ -10,6 +21,7 @@ class Diary(models.Model):
     >>> new_article2.reporter.id
     2
     """
+
     class Target(models.TextChoices):
         PUB = 'PUB', ('Public')
         SEC = 'SEC', ('Secret')
@@ -28,10 +40,5 @@ class Diary(models.Model):
 
 class DiaryImage(models.Model):
     """DiaryImage"""
-    image = models.ImageField(default='media/default_image.jpeg')
-    thumbnail = models.ImageField(default='media/default_image.jpeg')
-    diary = models.ForeignKey(Diary, on_delete=models.CASCADE)
-
-
-# class Place(models.Model):
-#     """Place model's informations which will be retrieved from GoogleMap"""
+    image = models.ImageField(null=True, upload_to=diary_image_file_path)
+    diary = models.ForeignKey(Diary, on_delete=models.CASCADE, related_name='image_set')
