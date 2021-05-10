@@ -6,7 +6,9 @@ class DiaryImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.DiaryImage
-        fields = ('image', 'thumbnail', 'diary')
+        fields = ('id', 'image', 'diary')
+        read_only_fields = ('id',)
+        extra_kwargs = {'diary': {'required': False}}
 
 
 class DiarySerializer(serializers.ModelSerializer):
@@ -15,7 +17,5 @@ class DiarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Diary
-        fields = ('target', 'title', 'description', 'user', 'image_set')
-        extra_kwargs = {
-            'user': {'required': False}
-        }
+        fields = ('id', 'target', 'title', 'description', 'user', 'image_set')
+        read_only_fields = ('id',)

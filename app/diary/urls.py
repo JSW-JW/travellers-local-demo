@@ -4,6 +4,7 @@ from django.conf.urls import url
 
 
 urlpatterns = [
-    url('', views.DiaryCreateListAPIView.as_view(), name='diary-list'),
-    url('<int:pk>', views.DiaryDetailAPIView.as_view(), name='diary-detail'),
+    path('', views.DiaryCreateListAPIView.as_view(), name='diary-list'),
+    path('<int:pk>/', views.DiaryDetailAPIView.as_view(), name='diary-detail'),
+    path('<int:pk>/upload-image/', views.ImageCreateListAPIView.as_view(), name='upload-image')
 ]

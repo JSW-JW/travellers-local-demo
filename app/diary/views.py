@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser
@@ -46,6 +47,7 @@ class DiaryCreateListAPIView(APIView):
 
 
 class DiaryDetailAPIView(APIView):
+    serializer_class = serializers.DiarySerializer
 
     def get_object(self, pk):
         diary = get_object_or_404(Diary, pk=pk)
@@ -54,7 +56,7 @@ class DiaryDetailAPIView(APIView):
     def get(self, request, pk):
         diary = self.get_object(pk)
         serializer = serializers.DiarySerializer(diary, context={'request': request})
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
         diary = self.get_object(pk)
@@ -68,3 +70,30 @@ class DiaryDetailAPIView(APIView):
         diary = self.get_object(pk=pk)
         diary.delete()
         return Response({'message': 'Diary was deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+    def get_serializer_class(self):
+        """Return appropriate serializer class"""
+        if self.action == 'upload_image':
+            return serializers.DiaryImageSerializer
+
+        return self.serializer_class
+
+
+class ImageCreateListAPIView(APIView):
+
+    def post(self, request, pk=None):
+        """create image concerned with diary"""
+        diary = Diary.objects.get(pk=pk)
+        serializer = serializers.DiaryImageSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(diary=diary)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
