@@ -84,11 +84,18 @@ INSTALLED_APPS = [
     'diary',
     'easy_thumbnails',
 
+    'taggit.apps.TaggitAppConfig',
+    'taggit_templatetags2',
+    'taggit_serializer',
+
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 ]
+
+TAGGIT_CASE_INSENSITIVE = True
+TAGGIT_LIMIT = 50
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -177,10 +184,3 @@ MEDIA_ROOT = '/vol/web/media'
 STATIC_ROOT = '/vol/web/static'
 
 AUTH_USER_MODEL = 'user.UserProfile'
-
-THUMBNAIL_ALIASES = {
-    '': {
-        'thumb': {'size': (40, 40)},
-        'image': {'size': (128, 128)},
-    },
-}

@@ -5,15 +5,16 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.generics import get_object_or_404
 
 from diary import serializers
 from diary.models import Diary
-from rest_framework.generics import get_object_or_404
+
+from django.views.generic import ListView, DetailView, TemplateView
 
 
 class DiaryCreateListAPIView(APIView):
 
-    parser_classes = [MultiPartParser,]
     serializer_class = serializers.DiarySerializer
     authentication_classes = (TokenAuthentication,)
     def get(self, request):
@@ -30,13 +31,11 @@ class DiaryCreateListAPIView(APIView):
     def post(self, request, format=None):
         serializer = serializers.DiarySerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            diary = serializer.save(user=request.user)
-            images = dict((request.data).lists())['image_set']
-            if images != None:
-                pass
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        """Image creation process and making connections"""
+        """ Should decide whether to handle image upload here 
+        or in the upload-image view separately """
         # images = dict((request.data).lists())['image_set']
         # print('image_set', images)
         # arr = []

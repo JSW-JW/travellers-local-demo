@@ -1,7 +1,11 @@
 import uuid
 import os
+
+from taggit.managers import TaggableManager
+
 from django.db import models
 from user.models import UserProfile
+
 
 
 def diary_image_file_path(instance, filename):
@@ -13,14 +17,6 @@ def diary_image_file_path(instance, filename):
 
 
 class Diary(models.Model):
-    """
-    Diary model. N:1 to UserProfile Model. It is possible to change the ForeignKey by writing on the N model.
-    >>> new_article2.reporter.id
-    1
-    >>> r2.article_set.add(new_article2)
-    >>> new_article2.reporter.id
-    2
-    """
 
     class Target(models.TextChoices):
         PUB = 'PUB', ('Public')
@@ -36,6 +32,7 @@ class Diary(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    tags = TaggableManager(blank=True)
 
 
 class DiaryImage(models.Model):
